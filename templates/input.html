@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Input
+{% endblock %}
+
+{% block main %}
+
+    <form action="/input" method="post">
+        <div class="mb-3">
+          <div>
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="activity" name="activity" placeholder="Activity" type="text" list="activity_list">
+
+            <datalist id="activity_list">
+              {% for activity in activity %}
+              <option value="{{ activity.activity }}">{{ activity.activity }}</option>
+              {% endfor %}
+            </datalist>
+          </div>
+        </div>
+        <div class="mb-3">
+            <input autocomplete="off" class="form-control mx-auto w-auto" name="focus" placeholder="Focus" type="text" list="focus_list">
+
+            <datalist id="focus_list">
+              {% for focus in focus %}
+              <option value="{{ focus.focus }}">{{ focus.focus }}</option>
+              {% endfor %}
+            </datalist>
+        </div>
+        <div class="mb-3">
+            <input autocomplete="off" class="form-control mx-auto w-auto" name="mood" placeholder="Mood" type="text" list="mood_list">
+
+            <datalist id="mood_list">
+              {% for mood in mood %}
+              <option value="{{ mood.mood }}">{{ mood.mood }}</option>
+              {% endfor %}
+            </datalist>
+        </div>
+        <div class="mb-3">
+          <input autocomplete="off" class="form-control mx-auto w-auto" name="duration" placeholder="Duration (MIN)" type="number" list="duration_list">
+
+          <datalist id="duration_list">
+            {% for duration in duration %}
+            <option value="{{ duration.duration }}">{{ duration.duration }}</option>
+            {% endfor %}
+          </datalist>
+        </div>
+        <div class="mb-3">
+          <input autocomplete="off" class="form-control mx-auto w-auto" name="scale" placeholder="Productivity Scale" type="number" list="scale_list">
+
+          <datalist id="scale_list">
+            {% for scale in scale %}
+            <option value="{{ scale.scale }}">{{ scale.scale }}</option>
+            {% endfor %}
+          </datalist>
+        </div>
+        <button class="btn btn-primary" type="submit">Submitt Activity</button>
+
+    </form>
+
+{% endblock %}
+
+

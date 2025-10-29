@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Index
+{% endblock %}
+
+{% block main %}
+
+    <div>
+        <input autocomplete="off" autofocus="timer" placeholder="Set Timer (MIN)" type="number" id="timer" name="timer">
+        <button type="button" id="button">Confirm</button>
+    </div>
+
+
+
+    <div class="mb-3">
+        <div>
+            <select class="form-select mx-auto w-auto" name="year" id="year">
+                <option>Year</option>
+                {% for year_only in year_only %}
+                <option value="{{ year_only.year_only }}">{{ year_only.year_only }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <select class="form-select mx-auto w-auto" name="month" id="month">
+                <option>Month</option>
+                {% for month in month %}
+                <option value="{{ month.month_only }}">{{ month.month_only }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <select class="form-select mx-auto w-auto" name="day" id="day">
+                <option>Day</option>
+                {% for day in day %}
+                <option value="{{ day.day_only }}">{{ day.day_only }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+
+
+    <table id="query_result" style="display: none">
+        <thead>
+            <tr>
+                <th>Activity</th>
+                <th>Mood</th>
+                <th>Focus</th>
+                <th>Year</th>
+                <th>Month</th>
+                <th>Day</th>
+                <th>Productivity Scale</th>
+                <th>Activity Duration</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in query_result %}
+                <tr>
+                    <td>{{ row.activity }}</td>
+                    <td>{{ row.mood }}</td>
+                    <td>{{ row.focus }}</td>
+                    <td>{{ row.year }}</td>
+                    <td>{{ row.month }}</td>
+                    <td>{{ row.day }}</td>
+                    <td>{{ row.scale }}</td>
+                    <td>{{ row.duration }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        $(document).ready(function() {
+          $("#button").click(function() {
+            var timerValue = $("#timer").val();
+            console.log(timerValue); // debug output
+            // submit the timer value to the server using Ajax
+            $.ajax({
+              type: "GET",
+              url: "/",
+              data: {"timer": timerValue},
+              success: function(response) {
+                console.log(response);
+              },
+              error: function(xhr, status, error) {
+                console.log(error);
+              }
+            });
+          });
+        });
+    </script>
+
+{% endblock %}
+
+
+

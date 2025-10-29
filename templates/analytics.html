@@ -1,0 +1,223 @@
+{% extends "layout.html" %} {% block title %} Analytics {% endblock %} {% block
+main %}
+<div class="mb-3">
+  <div>
+    <select class="form-select mx-auto w-auto" name="yearPie" id="yearPie">
+      <option disabled selected>Year</option>
+      {% for year in year_only %}
+      <option value="{{ year.year_only }}">{{ year.year_only }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <select
+      class="form-select mx-auto w-auto"
+      name="monthPie"
+      id="monthPie"
+      disabled
+    >
+      <option disabled selected>Month</option>
+      {% for month in month_only %}
+      <option value="{{ month.month_only }}">{{ month.month_only }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <select
+      class="form-select mx-auto w-auto"
+      name="dayPie"
+      id="dayPie"
+      disabled
+    >
+      <option disabled selected>Day</option>
+      {% for day in day_only %}
+      <option value="{{ day.day_only }}">{{ day.day_only }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+<script>
+  $("#yearPie").on("change", function () {
+    $("#monthPie").removeAttr("disabled");
+  });
+
+  $("#monthPie").on("change", function () {
+    $("#dayPie").removeAttr("disabled");
+  });
+</script>
+
+<style>
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .chart {
+    width: 48%;
+  }
+</style>
+
+<div class="container">
+  <div class="chart">
+    <div id="myDiv">Total Activities Performed</div>
+  </div>
+  <div class="chart">
+    <div id="durationDiv">Total Duration of Activities Performed (min)</div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function () {
+    $("#yearPie, #monthPie, #dayPie").on("change", function () {
+      updatePieChart();
+    });
+  });
+
+  function updatePieChart() {
+    // Get the selected values from the select elements
+    var year = $("#yearPie").val();
+    var month = $("#monthPie").val();
+    var day = $("#dayPie").val();
+
+    // Make an AJAX request to update both pie charts
+    $.ajax({
+      type: "POST",
+      url: "/analytics",
+      data: { yearPie: year, monthPie: month, dayPie: day },
+      success: function (response) {
+        // Parse the JSON response into an object
+        var pie_chart = JSON.parse(response);
+
+        // Extract data for the first pie chart
+        var graphValues1 = [];
+        var graphLabels1 = [];
+        for (var i = 0; i < pie_chart.length; i++) {
+          graphValues1.push(pie_chart[i].total);
+          graphLabels1.push(pie_chart[i].activity);
+        }
+
+        // Extract data for the second pie chart
+        var graphValues2 = [];
+        var graphLabels2 = [];
+        for (var i = 0; i < pie_chart.length; i++) {
+          graphValues2.push(pie_chart[i].duration);
+          graphLabels2.push(pie_chart[i].activity);
+        }
+
+        // Create data and layout objects for both charts
+        var data1 = [
+          { values: graphValues1, labels: graphLabels1, type: "pie" },
+        ];
+        var layout1 = {
+          height: 400,
+          width: 500,
+        };
+
+        var data2 = [
+          { values: graphValues2, labels: graphLabels2, type: "pie" },
+        ];
+        var layout2 = {
+          height: 400,
+          width: 500,
+        };
+
+        // Update both charts with the new data and layout
+        Plotly.react("myDiv", data1, layout1);
+        Plotly.react("durationDiv", data2, layout2);
+      },
+      error: function (error) {
+        console.log(error);
+      },
+    });
+  }
+</script>
+
+<div class="containerPie">
+  <div class="chartPie">
+    <div id="chart_total"></div>
+  </div>
+  <div class="chartPie">
+    <div id="chart_total2"></div>
+  </div>
+</div>
+<style>
+  .containerPie {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .chartPie {
+    width: 48%;
+  }
+</style>
+<script>
+  var graphValues = [];
+  var graphLabels = [];
+  {% for row in pie_chart %}
+      graphValues.push({{ row.total }});
+      graphLabels.push('{{ row.activity }}');
+  {% endfor %}
+
+  var data = [{        values: graphValues,        labels: graphLabels,        type: "pie"    }];
+
+  var layout = {
+      height: 400,
+      width: 500
+  };
+
+  Plotly.newPlot("chart_total", data, layout);
+
+  var graphValues2 = [];
+  var graphLabels2 = [];
+  {% for row in pie_chart %}
+      graphValues2.push({{ row.duration }});
+      graphLabels2.push('{{ row.activity }}');
+  {% endfor %}
+
+  var data2 = [{        values: graphValues2,        labels: graphLabels2,        type: "pie"    }];
+
+  var layout2 = {
+      height: 400,
+      width: 500
+  };
+
+  Plotly.newPlot("chart_total2", data2, layout2);
+</script>
+
+<script>
+  // Get the select elements
+  const yearPieSelect = document.getElementById("yearPie");
+  const monthPieSelect = document.getElementById("monthPie");
+  const dayPieSelect = document.getElementById("dayPie");
+
+  // Get the chart element
+  const charts = document.querySelectorAll(".chartPie"); // Select all elements with class "chart"
+
+  // Function to update the visibility of the chart based on the select inputs
+  function updateChartVisibility() {
+    // Check if all the select inputs have their default option selected
+    if (
+      yearPieSelect.value === "Year" &&
+      monthPieSelect.value === "Month" &&
+      dayPieSelect.value === "Day"
+    ) {
+      // Show the charts
+      charts.forEach((chart) => {
+        chart.style.display = "block";
+      });
+    } else {
+      // Hide the charts
+      charts.forEach((chart) => {
+        chart.style.display = "none";
+      });
+    }
+  }
+
+  // Attach the event listeners to the select elements
+  yearPieSelect.addEventListener("change", updateChartVisibility);
+  monthPieSelect.addEventListener("change", updateChartVisibility);
+  dayPieSelect.addEventListener("change", updateChartVisibility);
+</script>
+
+{% endblock %}

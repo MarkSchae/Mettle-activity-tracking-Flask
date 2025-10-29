@@ -1,0 +1,254 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    History
+{% endblock %}
+
+{% block main %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Activity</th>
+                    <th>Focus</th>
+                    <th>Mood</th>
+                    <th>Time</th>
+                    <th>Duration (min)</th>
+                    <th>Productivity Scale</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- TODO: Loop through the database entries to display them in this table -->
+                {% for history in history %}
+                    <tr>
+                        <td>{{ history.activity}}</td>
+                        <td>{{ history.focus }}</td>
+                        <td>{{ history.mood }}</td>
+                        <td>{{ history.time }}</td>
+                        <td>{{ history.duration }}</td>
+                        <td>{{ history.scale }}</td>
+                    </tr>
+                {% endfor %}
+
+        <div class="mb-3">
+            <div>
+                <select class="form-select mx-auto w-auto" name="yearPlot" id="yearPlot">
+                    <option disabled selected>Year</option>
+                    {% for year in year_only %}
+                    <option value="{{ year.year_only }}">{{ year.year_only }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <select class="form-select mx-auto w-auto" name="monthPlot" id="monthPlot" disabled>
+                    <option disabled selected>Month</option>
+                    {% for month in month_only %}
+                    <option value="{{ month.month_only }}">{{ month.month_only }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <select class="form-select mx-auto w-auto" name="dayPlot" id="dayPlot" disabled>
+                    <option disabled selected>Day</option>
+                    {% for day in day_only %}
+                    <option value="{{ day.day_only }}">{{ day.day_only }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <script>
+            $("#yearPlot").on("change", function() {
+                $("#monthPlot").removeAttr("disabled");
+            });
+
+            $("#monthPlot").on("change", function() {
+                $("#dayPlot").removeAttr("disabled");
+            });
+        </script>
+
+        <div class="containerPlot">
+            <div  class="scatter_plot">
+                <div id="plot_year" style="width:100%;height:400px;"></div>
+            </div>
+            <div  class="scatter_plot">
+                <div id="plot_month" style="width:100%;height:400px;"></div>
+            </div>
+            <div  class="scatter_plot">
+                <div id="plot_day" style="width:100%;height:400px;"></div>
+            </div>
+        </div>
+        <style>
+            .containerPlot
+            {
+                display: none;
+
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+        .scatter_plot
+        {
+            width: 48%;
+        }
+        </style>
+
+        <script>
+            $("#yearPlot").on("change", function() {
+                $.ajax({
+                url: "/history",
+                type: "POST",
+                data: {
+                    year: $("#yearPlot").val()
+                },
+                success: function(response) {
+                    // Handle the response from the server
+                    console.log(response);
+                    var data = response;
+                    var timeX = [];
+                    var scaleY = [];
+                    for (var i = 0; i < data.year_plot.length; i++) {
+                    scaleY.push(data.year_plot[i].scale);
+                    timeX.push(data.year_plot[i].month);
+                    }
+                    var trace1 = {
+                    x: timeX,
+                    y: scaleY,
+                    mode: "lines+markers",
+                    type: "scatter"
+                    };
+                    var plotData = [trace1];
+                    var layout = {
+                    margin: { t: 0 },
+                    yaxis: {
+                        tickmode: "linear",
+                        tick0: scaleY[0],
+                        dtick: 1,
+                        title: "AVG Productivity Scale"
+                    },
+                    xaxis: {
+                        title: "Month"
+                    }
+                    };
+                    Plotly.newPlot("plot_year", plotData, layout);
+                }
+                });
+                });
+            </script>
+
+            <script>
+            $("#monthPlot").on("change", function() {
+                $.ajax({
+                    url: "/history",
+                    type: "POST",
+                    data: {
+                        year: $("#yearPlot").val(),
+                        month: $("#monthPlot").val()
+                    },
+                    success: function(response) {
+                        // Handle the response from the server
+                        console.log(response);
+                        var data = response;
+                        var timeX = [];
+                        var scaleY = [];
+                        for (var i = 0; i < data.month_plot.length; i++) {
+                                scaleY.push(data.month_plot[i].scale);
+                                timeX.push(data.month_plot[i].day);
+                            }
+                        var trace1 = {
+                            x: timeX,
+                            y: scaleY,
+                            type: "scatter"
+                        };
+                        var plotData = [trace1];
+                        var layout = {
+                            margin: { t: 0 },
+                            xaxis: {
+                                title: "Day"
+                            },
+                            yaxis: {
+                                title: "AVG Productivity Scale"
+                            }
+                        };
+                        Plotly.newPlot("plot_month", plotData, layout);
+                    }
+                });
+            });
+        </script>
+
+
+        <script>
+            $("#dayPlot").on("change", function() {
+                $.ajax({
+                    url: "/history",
+                    type: "POST",
+                    data: {
+                        year: $("#yearPlot").val(),
+                        month: $("#monthPlot").val(),
+                        day: $("#dayPlot").val()
+                    },
+                    success: function(response) {
+                        // Handle the response from the server
+                        console.log(response);
+                        var data = response;
+                        var timeX = [];
+                        var scaleY = [];
+                        for (var i = 0; i < data.day_plot.length; i++) {
+                            scaleY.push(data.day_plot[i].scale);
+                            timeX.push(data.day_plot[i].time);
+                        }
+                        var trace1 = {
+                            x: timeX,
+                            y: scaleY,
+                            type: "scatter"
+                        };
+                        var plotData = [trace1];
+                        var layout = {
+                            margin: { t: 0 },
+                            yaxis: {
+                                title: "Productivity Scale"
+                            },
+                            xaxis: {
+                                title: "Time"
+                            }
+                        };
+                        Plotly.newPlot("plot_day", plotData, layout);
+                    }
+                });
+            });
+        </script>
+
+        <script>
+            const yearPlotSelect = document.getElementById("yearPlot");
+            const monthPlotSelect = document.getElementById("monthPlot");
+            const dayPlotSelect = document.getElementById("dayPlot");
+
+            const plots = document.querySelectorAll(".containerPlot"); // Select all elements with class "chart"
+
+            function updatePlotVisibility() {
+        // Check if all the select inputs have their default option selected
+            if (
+                yearPlotSelect.value === "Year" &&
+                monthPlotSelect.value === "Month" &&
+                dayPlotSelect.value === "Day"
+            ) {
+                // hide the charts
+                plots.forEach(plot => {
+                    plot.style.display = "none";
+                });
+            } else {
+                // show the charts
+                plots.forEach(plot => {
+                    plot.style.display = "flex";
+                });
+            }
+        }
+
+                // Attach the event listeners to the select elements
+            yearPlotSelect.addEventListener("change", updatePlotVisibility);
+            monthPlotSelect.addEventListener("change", updatePlotVisibility);
+            dayPlotSelect.addEventListener("change", updatePlotVisibility);
+        </script>
+
+
+
+{% endblock %}
+
