@@ -10,8 +10,14 @@ from helpers import apology, login_required
 from flask_session import Session
 from flask import Flask, redirect, render_template, request, session
 
+from dotenv import load_dotenv
+load_dotenv()
+
 # Configure application
 app = Flask(__name__)
+
+# Securely load secret key from environment
+app.secret_key = os.environ.get("SECRET_KEY")
 
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False
@@ -36,7 +42,7 @@ def after_request(response):
 @app.route("/")
 @login_required
 def index():
-    """Show portfolio of stocks"""
+    """Show activity data"""
     # Set current user in session to a variable
     user_id = session["user_id"]
     # Execute SQL query
